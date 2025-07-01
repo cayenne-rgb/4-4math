@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4학년 수학 미로 퀴즈</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e0f2fe; /* Light blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .button-primary {
+            background-color: #3b82f6; /* Blue */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .button-primary:hover {
+            background-color: #2563eb; /* Darker blue */
+        }
+        .button-secondary {
+            background-color: #60a5fa; /* Lighter blue */
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 10px rgba(96, 165, 250, 0.3);
+        }
+        .button-secondary:hover {
+            background-color: #3b82f6; /* Blue */
+        }
+        input[type="number"] {
+            border: 2px solid #bfdbfe; /* Light blue border */
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 1.25rem;
+            text-align: center;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        .feedback-message {
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .correct {
+            color: #10b981; /* Green */
+        }
+        .incorrect {
+            color: #ef4444; /* Red */
+        }
+        .question-text {
+            font-size: 2.5rem; /* Larger font for question */
+            font-weight: 700;
+            color: #1e3a8a; /* Dark blue */
+            margin-bottom: 20px;
+        }
+        .progress-text {
+            font-size: 1.1rem;
+            color: #6b7280; /* Gray */
+        }
+        .result-message {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+        .score-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #059669; /* Green */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-4xl font-bold text-blue-800 mb-4">수학 미로 퀴즈</h1>
+        <div id="start-screen">
+            <p class="text-lg text-gray-700 mb-6">두 자리 수와 세 자리 수 곱셈 문제를 풀어 미로를 통과해 보세요! 총 20문제입니다.</p>
+            <button id="start-button" class="button-primary">퀴즈 시작!</button>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <p id="progress-text" class="progress-text mb-4">문제 1 / 20</p>
+            <p id="question-text" class="question-text"></p>
+            <input type="number" id="answer-input" placeholder="정답을 입력하세요" class="mb-4">
+            <button id="submit-button" class="button-primary mb-4">정답 확인</button>
+            <p id="feedback-message" class="feedback-message"></p>
+        </div>
+
+        <div id="result-screen" class="hidden">
+            <p class="result-message mb-4">퀴즈 완료!</p>
+            <p id="final-score" class="score-text mb-6"></p>
+            <button id="restart-button" class="button-secondary">다시 시작</button>
+        </div>
+    </div>
+
+    <script>
+        // DOM 요소 가져오기
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const startButton = document.getElementById('start-button');
+        const questionText = document.getElementById('question-text');
+        const answerInput = document.getElementById('answer-input');
+        const submitButton = document.getElementById('submit-button');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const progressText = document.getElementById('progress-text');
+        const finalScore = document.getElementById('final-score');
+        const restartButton = document.getElementById('restart-button');
+
+        // 퀴즈 변수 초기화
+        let currentQuestionIndex = 0;
+        let score = 0;
+        const totalQuestions = 20;
+        let problems = []; // 문제와 정답을 저장할 배열
+
+        /**
+         * 두 자리 수 곱하기 세 자리 수 문제를 생성합니다.
+         * @returns {object} 문제 객체 { num1: number, num2: number, answer: number }
+         */
+        function generateProblem() {
+            // 10에서 99 사이의 두 자리 수 생성
+            const num1 = Math.floor(Math.random() * (99 - 10 + 1)) + 10;
+            // 100에서 999 사이의 세 자리 수 생성
+            const num2 = Math.floor(Math.random() * (999 - 100 + 1)) + 100;
+            const answer = num1 * num2;
+            return { num1, num2, answer };
+        }
+
+        /**
+         * 20개의 문제를 미리 생성하여 problems 배열에 저장합니다.
+         */
+        function generateAllProblems() {
+            problems = []; // 기존 문제 초기화
+            for (let i = 0; i < totalQuestions; i++) {
+                problems.push(generateProblem());
+            }
+        }
+
+        /**
+         * 현재 문제를 화면에 표시합니다.
+         */
+        function displayQuestion() {
+            // 현재 문제의 인덱스가 총 문제 수를 초과하면 퀴즈를 종료합니다.
+            if (currentQuestionIndex >= totalQuestions) {
+                endQuiz();
+                return;
+            }
+
+            const problem = problems[currentQuestionIndex];
+            questionText.textContent = `${problem.num1} × ${problem.num2} = ?`;
+            answerInput.value = ''; // 입력 필드 초기화
+            feedbackMessage.textContent = ''; // 피드백 메시지 초기화
+            progressText.textContent = `문제 ${currentQuestionIndex + 1} / ${totalQuestions}`; // 진행 상황 업데이트
+            answerInput.focus(); // 입력 필드에 포커스
+        }
+
+        /**
+         * 사용자가 입력한 정답을 확인합니다.
+         */
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value, 10);
+            const correctAnswer = problems[currentQuestionIndex].answer;
+
+            // 입력값이 유효한 숫자인지 확인
+            if (isNaN(userAnswer)) {
+                feedbackMessage.textContent = '숫자를 입력해주세요!';
+                feedbackMessage.className = 'feedback-message incorrect';
+                return;
+            }
+
+            // 정답 확인
+            if (userAnswer === correctAnswer) {
+                feedbackMessage.textContent = '정답입니다! 다음 미로로 나아갑니다.';
+                feedbackMessage.className = 'feedback-message correct';
+                score++; // 점수 증가
+                currentQuestionIndex++; // 다음 문제로 이동
+                // 잠시 후 다음 문제 표시
+                setTimeout(displayQuestion, 1000);
+            } else {
+                feedbackMessage.textContent = '오답입니다. 다시 시도해 보세요!';
+                feedbackMessage.className = 'feedback-message incorrect';
+            }
+        }
+
+        /**
+         * 퀴즈를 시작합니다.
+         */
+        function startQuiz() {
+            startScreen.classList.add('hidden'); // 시작 화면 숨기기
+            quizScreen.classList.remove('hidden'); // 퀴즈 화면 표시
+            resultScreen.classList.add('hidden'); // 결과 화면 숨기기
+
+            currentQuestionIndex = 0; // 문제 인덱스 초기화
+            score = 0; // 점수 초기화
+            generateAllProblems(); // 새로운 문제 생성
+            displayQuestion(); // 첫 문제 표시
+        }
+
+        /**
+         * 퀴즈를 종료하고 결과를 표시합니다.
+         */
+        function endQuiz() {
+            quizScreen.classList.add('hidden'); // 퀴즈 화면 숨기기
+            resultScreen.classList.remove('hidden'); // 결과 화면 표시
+            finalScore.textContent = `총 ${totalQuestions}문제 중 ${score}문제 정답!`; // 최종 점수 표시
+        }
+
+        // 이벤트 리스너 설정
+        startButton.addEventListener('click', startQuiz);
+        submitButton.addEventListener('click', checkAnswer);
+        restartButton.addEventListener('click', startQuiz);
+
+        // Enter 키를 눌렀을 때 정답 확인
+        answerInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // 페이지 로드 시 시작 화면 표시
+        window.onload = function() {
+            startScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+        };
+    </script>
+</body>
+</html>
