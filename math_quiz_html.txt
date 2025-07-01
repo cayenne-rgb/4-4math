@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4학년 수학 미로 퀴즈</title>
+    <title>수학 미로 대탐험</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -39,6 +39,8 @@
             font-weight: 600;
             transition: background-color 0.3s ease;
             box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+            cursor: pointer;
+            border: none;
         }
         .button-primary:hover {
             background-color: #2563eb; /* Darker blue */
@@ -51,6 +53,8 @@
             font-weight: 600;
             transition: background-color 0.3s ease;
             box-shadow: 0 4px 10px rgba(96, 165, 250, 0.3);
+            cursor: pointer;
+            border: none;
         }
         .button-secondary:hover {
             background-color: #3b82f6; /* Blue */
@@ -101,28 +105,126 @@
             font-weight: 600;
             color: #059669; /* Green */
         }
+        .emoji-large {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .treasure-image {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            border-radius: 10px;
+            object-fit: contain; /* Ensure the image fits without cropping */
+        }
+
+        /* 스테이지 클리어 모달 스타일 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: scale(0.9);
+            animation: popIn 0.3s forwards;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-content .emoji-large {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        .modal-content .modal-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+        }
+        .modal-content .modal-story {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        /* AI 힌트/피드백 영역 */
+        #ai-response-area {
+            background-color: #f0f9ff; /* Very light blue */
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: left;
+            font-size: 0.95rem;
+            color: #1e40af; /* Darker blue text */
+            min-height: 50px; /* 최소 높이 설정 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-break: break-word; /* 긴 텍스트 줄바꿈 */
+        }
+        #ai-response-area.loading {
+            color: #60a5fa;
+        }
+        .hint-button-container {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-4xl font-bold text-blue-800 mb-4">수학 미로 퀴즈</h1>
+        <h1 class="text-4xl font-bold text-blue-800 mb-4">수학 미로 대탐험 🗺️</h1>
         <div id="start-screen">
-            <p class="text-lg text-gray-700 mb-6">두 자리 수와 세 자리 수 곱셈 문제를 풀어 미로를 통과해 보세요! 총 20문제입니다.</p>
-            <button id="start-button" class="button-primary">퀴즈 시작!</button>
+            <p class="emoji-large">🗝️</p>
+            <p class="text-lg text-gray-700 mb-6">
+                신비로운 수학 미로에 갇혔어요! 😱 곱셈과 나눗셈 문제를 풀어 미로의 다음 방으로 나아가세요.
+                총 20개의 방을 통과하면 숨겨진 보물을 찾고 미로를 탈출할 수 있습니다! 💎
+            </p>
+            <button id="start-button" class="button-primary">미로 탐험 시작! ✨</button>
         </div>
 
         <div id="quiz-screen" class="hidden">
-            <p id="progress-text" class="progress-text mb-4">문제 1 / 20</p>
+            <p id="progress-text" class="progress-text mb-4">미로의 첫 번째 방 🧭</p>
             <p id="question-text" class="question-text"></p>
             <input type="number" id="answer-input" placeholder="정답을 입력하세요" class="mb-4">
-            <button id="submit-button" class="button-primary mb-4">정답 확인</button>
+            <div class="hint-button-container">
+                <button id="hint-button" class="button-secondary">힌트 받기 💡</button>
+            </div>
+            <button id="submit-button" class="button-primary mb-4">정답 확인 ✅</button>
             <p id="feedback-message" class="feedback-message"></p>
+            <div id="ai-response-area" class="text-gray-600">AI 도우미가 여기에 나타납니다.</div>
         </div>
 
         <div id="result-screen" class="hidden">
-            <p class="result-message mb-4">퀴즈 완료!</p>
+            <p class="emoji-large">🏆</p>
+            <p class="result-message mb-4">미로 탈출 성공! 보물을 찾았어요! 🎉</p>
+            <img id="treasure-img" src="https://placehold.co/150x150/FFD700/000000?text=보물상자" alt="보물상자" class="treasure-image">
             <p id="final-score" class="score-text mb-6"></p>
-            <button id="restart-button" class="button-secondary">다시 시작</button>
+            <button id="restart-button" class="button-secondary">다시 탐험하기 🔄</button>
+        </div>
+    </div>
+
+    <!-- 스테이지 클리어 모달 -->
+    <div id="stage-clear-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <p id="stage-clear-emoji" class="emoji-large"></p>
+            <p id="stage-clear-title" class="modal-title"></p>
+            <p id="stage-clear-story" class="modal-story"></p>
+            <button id="continue-button" class="button-primary">계속하기 ✨</button>
         </div>
     </div>
 
@@ -139,33 +241,94 @@
         const progressText = document.getElementById('progress-text');
         const finalScore = document.getElementById('final-score');
         const restartButton = document.getElementById('restart-button');
+        const treasureImg = document.getElementById('treasure-img');
+
+        // AI 도우미 관련 요소
+        const hintButton = document.getElementById('hint-button');
+        const aiResponseArea = document.getElementById('ai-response-area');
+
+        // 스테이지 클리어 모달 관련 요소
+        const stageClearModal = document.getElementById('stage-clear-modal');
+        const stageClearEmoji = document.getElementById('stage-clear-emoji');
+        const stageClearTitle = document.getElementById('stage-clear-title');
+        const stageClearStory = document.getElementById('modal-story'); // Changed from stageClearStory to modal-story for consistency
+        const continueButton = document.getElementById('continue-button');
 
         // 퀴즈 변수 초기화
         let currentQuestionIndex = 0;
         let score = 0;
-        const totalQuestions = 20;
+        const totalQuestions = 20; // 총 문제 수 (미로의 방 수)
         let problems = []; // 문제와 정답을 저장할 배열
 
+        // 스테이지별 정보 (문제 수, 이모지, 제목, 스토리)
+        const stageInfo = [
+            { index: 5, emoji: '🌟', title: '첫 번째 관문 통과!', story: '미로의 깊숙한 곳으로 한 걸음 더 들어섰습니다. 새로운 길이 열렸어요!' },
+            { index: 10, emoji: '💡', title: '숨겨진 비밀 발견!', story: '어두운 복도에서 빛나는 단서를 찾았습니다. 보물이 가까워지는군요!' },
+            { index: 15, emoji: '🗺️', title: '지도의 조각 획득!', story: '오래된 지도의 한 조각을 발견했습니다. 미로의 출구가 보이기 시작합니다!' },
+            { index: 20, emoji: '🏆', title: '최종 관문 통과!', story: '마지막 난관을 극복했습니다. 이제 보물 상자를 열 시간이에요!' }
+        ];
+
         /**
-         * 두 자리 수 곱하기 세 자리 수 문제를 생성합니다.
-         * @returns {object} 문제 객체 { num1: number, num2: number, answer: number }
+         * 세 자리 수 곱하기 두 자리 수 문제를 생성합니다.
+         * @returns {object} 문제 객체 { num1: number, num2: number, operator: string, answer: number }
          */
-        function generateProblem() {
-            // 10에서 99 사이의 두 자리 수 생성
-            const num1 = Math.floor(Math.random() * (99 - 10 + 1)) + 10;
+        function generateMultiplicationProblem() {
             // 100에서 999 사이의 세 자리 수 생성
-            const num2 = Math.floor(Math.random() * (999 - 100 + 1)) + 100;
+            const num1 = Math.floor(Math.random() * (999 - 100 + 1)) + 100;
+            // 10에서 99 사이의 두 자리 수 생성
+            const num2 = Math.floor(Math.random() * (99 - 10 + 1)) + 10;
             const answer = num1 * num2;
-            return { num1, num2, answer };
+            return { num1, num2, operator: '×', answer: answer };
+        }
+
+        /**
+         * 세 자리 수 나누기 두 자리 수 문제를 생성합니다. (나누어 떨어지는 경우만)
+         * @returns {object} 문제 객체 { num1: number, num2: number, operator: string, answer: number }
+         */
+        function generateDivisionProblem() {
+            let divisor;
+            let quotient;
+            let dividend;
+
+            // 3자리 수 피제수와 2자리 수 제수를 보장하기 위해 반복
+            while (true) {
+                // 2자리 수 제수 (10-99)
+                divisor = Math.floor(Math.random() * (99 - 10 + 1)) + 10;
+
+                // 피제수(dividend)가 3자리 수가 되도록 몫(quotient) 범위 계산
+                // 몫은 최소 1부터 시작하며, (제수 * 몫)이 100 이상이 되어야 함
+                const minQuotient = Math.max(1, Math.ceil(100 / divisor));
+                // 몫은 (제수 * 몫)이 999 이하여야 함
+                const maxQuotient = Math.floor(999 / divisor);
+
+                // 유효한 몫 범위가 존재할 경우
+                if (minQuotient <= maxQuotient) {
+                    // 계산된 범위 내에서 무작위 몫 선택
+                    quotient = Math.floor(Math.random() * (maxQuotient - minQuotient + 1)) + minQuotient;
+                    dividend = divisor * quotient;
+
+                    // 생성된 피제수가 실제로 3자리 수인지 다시 확인
+                    if (dividend >= 100 && dividend <= 999) {
+                        break; // 유효한 문제 생성 완료
+                    }
+                }
+            }
+            return { num1: dividend, num2: divisor, operator: '÷', answer: quotient };
         }
 
         /**
          * 20개의 문제를 미리 생성하여 problems 배열에 저장합니다.
+         * 곱셈과 나눗셈 문제를 번갈아 또는 무작위로 섞어 생성합니다.
          */
         function generateAllProblems() {
             problems = []; // 기존 문제 초기화
             for (let i = 0; i < totalQuestions; i++) {
-                problems.push(generateProblem());
+                // 50% 확률로 곱셈 또는 나눗셈 문제 생성
+                if (Math.random() < 0.5) {
+                    problems.push(generateMultiplicationProblem());
+                } else {
+                    problems.push(generateDivisionProblem());
+                }
             }
         }
 
@@ -180,39 +343,123 @@
             }
 
             const problem = problems[currentQuestionIndex];
-            questionText.textContent = `${problem.num1} × ${problem.num2} = ?`;
+            questionText.textContent = `${problem.num1} ${problem.operator} ${problem.num2} = ?`;
             answerInput.value = ''; // 입력 필드 초기화
             feedbackMessage.textContent = ''; // 피드백 메시지 초기화
-            progressText.textContent = `문제 ${currentQuestionIndex + 1} / ${totalQuestions}`; // 진행 상황 업데이트
+            aiResponseArea.textContent = 'AI 도우미가 여기에 나타납니다.'; // AI 응답 영역 초기화
+            aiResponseArea.classList.remove('loading'); // 로딩 상태 제거
+            // 미로 진행 상황 업데이트에 이모지 추가
+            progressText.textContent = `미로의 🧭 ${currentQuestionIndex + 1}번째 방`;
             answerInput.focus(); // 입력 필드에 포커스
         }
 
         /**
          * 사용자가 입력한 정답을 확인합니다.
          */
-        function checkAnswer() {
+        async function checkAnswer() {
             const userAnswer = parseInt(answerInput.value, 10);
-            const correctAnswer = problems[currentQuestionIndex].answer;
+            const currentProblem = problems[currentQuestionIndex];
+            const correctAnswer = currentProblem.answer;
 
             // 입력값이 유효한 숫자인지 확인
             if (isNaN(userAnswer)) {
-                feedbackMessage.textContent = '숫자를 입력해주세요!';
+                feedbackMessage.textContent = '⚠️ 숫자를 입력해주세요!';
                 feedbackMessage.className = 'feedback-message incorrect';
                 return;
             }
 
             // 정답 확인
             if (userAnswer === correctAnswer) {
-                feedbackMessage.textContent = '정답입니다! 다음 미로로 나아갑니다.';
+                // 정답 메시지에 이모지 추가
+                feedbackMessage.textContent = '✅ 정답입니다! 미로의 다음 방으로 나아갑니다.';
                 feedbackMessage.className = 'feedback-message correct';
-                score++; // 점수 증가
+                score++; // 점수 증가 (정답 방 개수)
                 currentQuestionIndex++; // 다음 문제로 이동
-                // 잠시 후 다음 문제 표시
-                setTimeout(displayQuestion, 1000);
+
+                // 스테이지 클리어 확인
+                const clearedStage = stageInfo.find(stage => stage.index === currentQuestionIndex);
+                if (clearedStage) {
+                    showStageClearModal(clearedStage);
+                } else {
+                    // 잠시 후 다음 문제 표시 (스테이지 클리어 모달이 없는 경우에만)
+                    setTimeout(displayQuestion, 1000);
+                }
             } else {
-                feedbackMessage.textContent = '오답입니다. 다시 시도해 보세요!';
+                // 오답 메시지에 이모지 추가 (정답은 바로 보여주지 않음)
+                feedbackMessage.textContent = `❌ 오답입니다. 다시 시도해 보세요!`;
                 feedbackMessage.className = 'feedback-message incorrect';
+                // AI에게 피드백 요청
+                await getAIFeedback(currentProblem, userAnswer);
             }
+        }
+
+        /**
+         * AI 도우미에게 힌트를 요청합니다.
+         */
+        async function getHint() {
+            const currentProblem = problems[currentQuestionIndex];
+            const prompt = `4학년 학생을 위한 수학 문제입니다: ${currentProblem.num1} ${currentProblem.operator} ${currentProblem.num2} = ? 이 문제를 푸는 데 도움이 되는 쉬운 힌트를 제공해주세요. 정답을 직접 알려주지 마세요. 답변은 2~3문장 이내로 간결하게 작성해주세요.`;
+            await callGeminiAPI(prompt, "힌트 생성 중...");
+        }
+
+        /**
+         * AI 도우미에게 오답 피드백을 요청합니다.
+         * @param {object} problem - 현재 문제 객체
+         * @param {number} userAnswer - 사용자의 오답
+         */
+        async function getAIFeedback(problem, userAnswer) {
+            const prompt = `4학년 학생이 수학 문제 ${problem.num1} ${problem.operator} ${problem.num2} = ? 에 대해 ${userAnswer}라고 답했습니다. 이 답이 왜 틀렸는지 간략하게 설명하고, 정답을 직접 알려주지 않으면서 학생이 올바른 답을 스스로 찾을 수 있도록 단계별로 유도하는 힌트를 친절하고 쉽게 제공해주세요. 답변은 2~3문장 이내로 간결하게 작성해주세요.`;
+            await callGeminiAPI(prompt, "피드백 생성 중...");
+        }
+
+        /**
+         * Gemini API를 호출하여 AI 응답을 받습니다.
+         * @param {string} prompt - AI에게 보낼 프롬프트
+         * @param {string} loadingMessage - 로딩 시 표시할 메시지
+         */
+        async function callGeminiAPI(prompt, loadingMessage) {
+            aiResponseArea.textContent = loadingMessage;
+            aiResponseArea.classList.add('loading'); // 로딩 상태 추가
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = ""; // Canvas 환경에서 자동으로 제공됩니다.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    aiResponseArea.textContent = `🤖 AI 도우미: ${text}`;
+                } else {
+                    aiResponseArea.textContent = '🤖 AI 도우미: 응답을 생성할 수 없습니다. 다시 시도해주세요.';
+                }
+            } catch (error) {
+                console.error('Gemini API 호출 오류:', error);
+                aiResponseArea.textContent = '🤖 AI 도우미: 오류가 발생했습니다. 인터넷 연결을 확인해주세요.';
+            } finally {
+                aiResponseArea.classList.remove('loading'); // 로딩 상태 제거
+            }
+        }
+
+        /**
+         * 스테이지 클리어 모달을 표시합니다.
+         * @param {object} stage - 클리어한 스테이지 정보
+         */
+        function showStageClearModal(stage) {
+            stageClearEmoji.textContent = stage.emoji;
+            stageClearTitle.textContent = stage.title;
+            stageClearStory.textContent = stage.story;
+            stageClearModal.classList.remove('hidden');
         }
 
         /**
@@ -222,6 +469,7 @@
             startScreen.classList.add('hidden'); // 시작 화면 숨기기
             quizScreen.classList.remove('hidden'); // 퀴즈 화면 표시
             resultScreen.classList.add('hidden'); // 결과 화면 숨기기
+            stageClearModal.classList.add('hidden'); // 모달 숨기기
 
             currentQuestionIndex = 0; // 문제 인덱스 초기화
             score = 0; // 점수 초기화
@@ -235,13 +483,18 @@
         function endQuiz() {
             quizScreen.classList.add('hidden'); // 퀴즈 화면 숨기기
             resultScreen.classList.remove('hidden'); // 결과 화면 표시
-            finalScore.textContent = `총 ${totalQuestions}문제 중 ${score}문제 정답!`; // 최종 점수 표시
+            finalScore.textContent = `총 ${totalQuestions}개의 방 중 ${score}개의 방을 통과했습니다!`; // 최종 점수 표시
         }
 
         // 이벤트 리스너 설정
         startButton.addEventListener('click', startQuiz);
         submitButton.addEventListener('click', checkAnswer);
         restartButton.addEventListener('click', startQuiz);
+        hintButton.addEventListener('click', getHint); // 힌트 버튼 이벤트 리스너 추가
+        continueButton.addEventListener('click', function() {
+            stageClearModal.classList.add('hidden'); // 모달 숨기기
+            displayQuestion(); // 다음 문제 표시
+        });
 
         // Enter 키를 눌렀을 때 정답 확인
         answerInput.addEventListener('keypress', function(event) {
@@ -255,6 +508,7 @@
             startScreen.classList.remove('hidden');
             quizScreen.classList.add('hidden');
             resultScreen.classList.add('hidden');
+            stageClearModal.classList.add('hidden'); // 초기 로드 시 모달 숨김
         };
     </script>
 </body>
